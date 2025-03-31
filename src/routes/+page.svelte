@@ -130,7 +130,8 @@
 				<p class="mt-1 text-sm text-gray-600 sm:text-base">Daftar URL yang dilaporkan berbahaya</p>
 			</div>
 			<div class="flex flex-wrap gap-2 sm:space-x-3">
-				<button
+				<a
+					href="https://raksaka.urproject.my.id/report"
 					class="flex items-center rounded-lg bg-blue-600 px-3 py-1.5 text-sm text-white transition hover:bg-blue-700 sm:px-4 sm:py-2 sm:text-base"
 				>
 					<svg
@@ -146,7 +147,7 @@
 						/>
 					</svg>
 					<span class="sr-only sm:not-sr-only">Tambah Laporan</span>
-				</button>
+				</a>
 			</div>
 		</div>
 

@@ -146,7 +146,7 @@
 							clip-rule="evenodd"
 						/>
 					</svg>
-					<span class="sr-only sm:not-sr-only">Tambah Laporan</span>
+					<span class="sr-only sm:not-sr-only">Report</span>
 				</a>
 			</div>
 		</div>

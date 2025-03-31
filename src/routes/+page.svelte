@@ -13,14 +13,23 @@
 		created_at: string;
 	}
 
+	// Data state
 	let blacklistData: BlacklistItem[] = [];
 	let filteredData: BlacklistItem[] = [];
+	let displayedData: BlacklistItem[] = [];
 	let isLoading = true;
 	let error: string | null = null;
+
+	// Filter state
 	let searchQuery = '';
 	let statusFilter = 'Semua Status';
 	let typeFilter = 'Semua Jenis';
 	let sortOption = 'Terbaru';
+
+	// Pagination state
+	let currentPage = 1;
+	const itemsPerPage = 6;
+	let totalPages = 1;
 
 	async function fetchBlacklist() {
 		try {
@@ -70,7 +79,7 @@
 			filteredData = filteredData.filter((item) => item.status === statusFilter);
 		}
 
-		// Apply type filter (assuming jenisLaporan is available)
+		// Apply type filter
 		if (typeFilter !== 'Semua Jenis') {
 			filteredData = filteredData.filter((item) => item.jenisLaporan === typeFilter);
 		}
@@ -85,8 +94,29 @@
 				(a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
 			);
 		}
+
+		// Reset to first page when filters change
+		currentPage = 1;
+		updatePagination();
 	}
 
+	function updatePagination() {
+		// Calculate total pages
+		totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+		// Get data for current page
+		const startIndex = (currentPage - 1) * itemsPerPage;
+		displayedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
+	}
+
+	function goToPage(page: number) {
+		if (page >= 1 && page <= totalPages) {
+			currentPage = page;
+			updatePagination();
+		}
+	}
+
+	// Event handlers
 	function handleSearch(e: Event) {
 		searchQuery = (e.target as HTMLInputElement).value;
 		filterData();
@@ -267,7 +297,13 @@
 											clip-rule="evenodd"
 										></path>
 									</svg>
-									{item.tanggalLaporan}
+									{item.created_at
+										? new Date(item.created_at).toLocaleDateString('id-ID', {
+												year: 'numeric',
+												month: '2-digit',
+												day: '2-digit'
+											})
+										: 'Tidak ada tanggal'}
 								</div>
 								<div class="flex items-center">
 									<svg class="mr-1.5 h-4 w-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
@@ -376,22 +412,44 @@
 			class="mt-4 flex flex-col items-center justify-between gap-3 px-2 sm:mt-6 sm:flex-row sm:gap-0 sm:px-4"
 		>
 			<div class="text-xs text-gray-600 sm:text-sm">
-				Menampilkan 1-{filteredData.length} dari {filteredData.length} entri
+				Menampilkan {Math.min((currentPage - 1) * itemsPerPage + 1, filteredData.length)}-{Math.min(
+					currentPage * itemsPerPage,
+					filteredData.length
+				)} dari {filteredData.length} entri
 			</div>
 			<div class="flex space-x-1 sm:space-x-2">
 				<button
 					class="rounded-lg border px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-50 sm:px-3 sm:py-1 sm:text-sm"
-					disabled
+					disabled={currentPage === 1}
+					on:click={() => goToPage(currentPage - 1)}
 				>
 					Sebelumnya
 				</button>
-				<button
-					class="rounded-lg border bg-blue-600 px-2 py-1 text-xs text-white sm:px-3 sm:py-1 sm:text-sm"
-					>1</button
-				>
+
+				{#if totalPages > 1}
+					{#each { length: totalPages } as _, i}
+						<button
+							class={`rounded-lg border px-2 py-1 text-xs sm:px-3 sm:py-1 sm:text-sm ${
+								currentPage === i + 1 ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-50'
+							}`}
+							on:click={() => goToPage(i + 1)}
+						>
+							{i + 1}
+						</button>
+					{/each}
+				{:else}
+					<button
+						class="rounded-lg border bg-blue-600 px-2 py-1 text-xs text-white sm:px-3 sm:py-1 sm:text-sm"
+						disabled
+					>
+						1
+					</button>
+				{/if}
+
 				<button
 					class="rounded-lg border px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 disabled:opacity-50 sm:px-3 sm:py-1 sm:text-sm"
-					disabled
+					disabled={currentPage === totalPages}
+					on:click={() => goToPage(currentPage + 1)}
 				>
 					Selanjutnya
 				</button>
